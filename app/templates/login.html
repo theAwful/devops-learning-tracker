@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Login</h2>
+{% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+<form method="POST">
+    <div class="mb-3">
+        <label for="username" class="form-label">Username</label>
+        <input type="text" class="form-control" id="username" name="username" required>
+    </div>
+    <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" class="form-control" id="password" name="password" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Login</button>
+    <a href="#" onclick="document.getElementById('register-form').style.display='block'">Register</a>
+</form>
+<form id="register-form" style="display:none" method="POST" action="{{ url_for('main.register') }}">
+    <h3>Register</h3>
+    <div class="mb-3">
+        <label for="reg-username" class="form-label">Username</label>
+        <input type="text" class="form-control" id="reg-username" name="username" required>
+    </div>
+    <div class="mb-3">
+        <label for="reg-password" class="form-label">Password</label>
+        <input type="password" class="form-control" id="reg-password" name="password" required>
+    </div>
+    <button type="submit" class="btn btn-success">Register</button>
+</form>
+{% endblock %}
