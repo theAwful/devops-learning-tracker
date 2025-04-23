@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>DevSecOps Learning Dashboard</h1>
+<h3>Welcome, {{ current_user.username }}</h3>
+<h4>Progress: {{ progress.total_points }} Points ({{ progress.milestone }})</h4>
+<div class="progress mb-4">
+    <div class="progress-bar" role="progressbar" style="width: {{ (completed_goals / total_goals * 100) if total_goals > 0 else 0 }}%"
+         aria-valuenow="{{ completed_goals }}" aria-valuemin="0" aria-valuemax="{{ total_goals }}">{{ completed_goals }}/{{ total_goals }} Goals</div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <canvas id="goalsChart"></canvas>
+    </div>
+    <div class="col-md-6">
+        <canvas id="pointsChart"></canvas>
+    </div>
+</div>
+
+<form method="POST" action="{{ url_for('main.checkin') }}" class="mb-4">
+    <button type="submit" class="btn btn-info">Daily Check-In (5 Points)</button>
+</form>
+
+<h3>Add Resource</h3>
+<form method="POST" action="{{ url_for('main.add_resource') }}">
+    <div class="mb-3">
+        <label for="title" class="form-label">Title</label>
+        <input type="text" class="form-control" id="title" name="title" required>
+    </div>
+    <div class="mb-3">
+        <label for="url" class="form-label">URL</label>
+        <input type="url" class="form-control" id="url" name="url">
+    </div>
+    <div class="mb-3">
+        <label for="notes" class="form-label">Notes</label>
+        <textarea class="form-control" id="notes" name="notes"></textarea>
+    </div>
+    <div class="mb-3">
+        <label for="category" class="form-label">Category</label>
+        <select class="form-control" id="category" name="category" required>
+            <option value="Docker">Docker</option>
+            <option value="CI/CD">CI/CD</option>
+            <option value="Security">Security</option>
+            <option value="Kubernetes">Kubernetes</option>
+            <option value="Cloud">Cloud</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="tags" class="form-label">Tags (comma-separated)</label>
+        <input type="text" class="form-control" id="tags" name="tags">
+    </div>
+    <button type="submit" class="btn btn-primary">Add Resource</button>
+</form>
+
+<h3>Add Goal</h3>
+<form method="POST" action="{{ url_for('main.add_goal') }}">
+    <div class="mb-3">
+        <label for="goal-title" class="form-label">Goal Title</label>
+        <input type="text" class="form-control" id="goal-title" name="title" required>
+    </div>
+    <div class="mb-3">
+        <label for="deadline" class="form-label">Deadline</label>
+        <input type="date" class="form-control" id="deadline" name="deadline">
+    </div>
+    <div class="mb-3">
+        <label for="points" class="form-label">Points</label>
+        <input type="number" class="form-control" id="points" name="points" value="10" min="10" max="50" required>
+    </div>
+    <div class="mb-3">
+        <label for="category" class="form-label">Category</label>
+        <select class="form-control" id="category" name="category" required>
+            <option value="Docker">Docker</option>
+            <option value="CI/CD">CI/CD</option>
+            <option value="Security">Security</option>
+            <option value="Kubernetes">Kubernetes</option>
+            <option value="Cloud">Cloud</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Add Goal</button>
+</form>
+
+<h3>Add Project</h3>
+<form method="POST" action="{{ url_for('main.add_project') }}">
+    <div class="mb-3">
+        <label for="project-title" class="form-label">Project Title</label>
+        <input type="text" class="form-control" id="project-title" name="title" required>
+    </div>
+    <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <textarea class="form-control" id="description" name="description"></textarea>
+    </div>
+    <div class="mb-3">
+        <label for="repo_url" class="form-label">GitHub Repo URL</label>
+        <input type="url" class="form-control" id="repo_url" name="repo_url">
+    </div>
+    <div class="mb-3">
+        <label for="notes" class="form-label">Notes</label>
+        <textarea class="form-control" id="notes" name="notes"></textarea>
+    </div>
+    <div class="mb-3">
+        <label for="points" class="form-label">Points</label>
+        <input type="number" class="form-control" id="points" name="points" value="100" min="100" max="200" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-check-label">
+            <input type="checkbox" class="form-check-input" name="completed"> Completed
+        </label>
+    </div>
+    <button type="submit" class="btn btn-primary">Add Project</button>
+</form>
+
+<h3>Resources</h3>
+<ul class="list-group mb-4">
+    {% for resource in resources %}
+        <li class="list-group-item">{{ resource.title }} ({{ resource.category }}) - <a href="{{ resource.url }}">{{ resource.url }}</a><br>Tags: {{ resource.tags }}<br>Notes: {{ resource.notes }}</li>
+    {% endfor %}
+</ul>
+
+<h3>Goals</h3>
+<ul class="list-group mb-4">
+    {% for goal in goals %}
+        <li class="list-group-item">
+            {{ goal.title }} ({{ goal.category }}) - {{ goal.progress }}% ({{ goal.status }}) {% if goal.deadline %}Due: {{ goal.deadline }}{% endif %}
+            <form method="POST" action="{{ url_for('main.update_goal', id=goal.id) }}" class="d-inline">
+                <input type="number" name="progress" min="0" max="100" value="{{ goal.progress }}" style="width: 60px;">
+                <select name="status">
+                    <option value="Not Started" {% if goal.status == 'Not Started' %}selected{% endif %}>Not Started</option>
+                    <option value="In Progress" {% if goal.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                    <option value="Completed" {% if goal.status == 'Completed' %}selected{% endif %}>Completed</option>
+                </select>
+                <button type="submit" class="btn btn-sm btn-success">Update</button>
+            </form>
+        </li>
+    {% endfor %}
+</ul>
+
+<h3>Projects</h3>
+<ul class="list-group mb-4">
+    {% for project in projects %}
+        <li class="list-group-item">
+            {{ project.title }} - {{ 'Completed' if project.completed else 'In Progress' }} ({{ project.points }} Points)
+            <br>Description: {{ project.description }}
+            <br><a href="{{ project.repo_url }}">{{ project.repo_url }}</a>
+            <br>Notes: {{ project.notes }}
+        </li>
+    {% endfor %}
+</ul>
+
+<h3>Export/Import</h3>
+<a href="{{ url_for('main.export') }}" class="btn btn-secondary mb-2">Export Data (JSON)</a>
+<form method="POST" action="{{ url_for('main.import_data') }}" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label for="import_file" class="form-label">Import JSON File</label>
+        <input type="file" class="form-control" id="import_file" name="import_file" accept=".json">
+    </div>
+    <button type="submit" class="btn btn-secondary">Import Data</button>
+</form>
+
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}
