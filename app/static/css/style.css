@@ -1,0 +1,15 @@
+body {
+    background-color: #f8f9fa;
+}
+.container {
+    max-width: 1000px;
+}
+.progress {
+    height: 20px;
+}
+.list-group-item {
+    margin-bottom: 10px;
+}
+canvas {
+    max-width: 100%;
+}
